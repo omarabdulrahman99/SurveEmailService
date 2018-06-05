@@ -1,7 +1,20 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const mongoose = require('mongoose');
 const keys = require('../config/keys.js');
 
+const User = mongoose.model('users');
+
+passport.serializeUser((user,done) =>{
+
+	done(null, user.id);//first argument is an error object.
+
+});
+
+passport.deserializeUser(() => {
+
+
+});
 
 passport.use(new GoogleStrategy({
 
@@ -11,9 +24,22 @@ passport.use(new GoogleStrategy({
 
   }, (accessToken, refreshToken, profile, done) => {
 
-  		console.log('access token', accessToken);
-  		console.log('refresh token', refreshToken);//access token expires after some time, refresh token allows access token to be reused for more time.
-  		console.log('profile:', profile);
+  		User.findOne({ googleId: profile.id })//cant set var user = to this result bc this returns a promise.
+  			.then((existingUser) => {
+  				if(existingUser){
+
+  					done(null, existingUser);
+
+  				}else{
+
+  					new User({googleId: profile.id}).save()
+  							.then(user => done(null, user));
+  				}
+
+  			})
+  		
 
   })
 );
+
+
