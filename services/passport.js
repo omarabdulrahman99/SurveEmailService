@@ -1,18 +1,25 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const mongoose = require('mongoose');
-const keys = require('../config/keys.js');
 
+
+
+const keys = require('../config/keys.js');
 const User = mongoose.model('users');
 
-passport.serializeUser((user,done) =>{
+passport.serializeUser((user,done) =>{ //turn user model instance to an ID
 
 	done(null, user.id);//first argument is an error object.
 
 });
 
-passport.deserializeUser(() => {
+passport.deserializeUser((id, done) => { //turn id to user model instance
 
+  User.findById(id).then(user => {
+
+    done(null, user);
+
+  })
 
 });
 
